@@ -42,47 +42,57 @@
 
 
 		let notes = [];
-		let octave = 0;
-		for (let n = 0; n < 88; n++) {
-			let frequency = Math.pow(2, (n - 48) / KEYS.length ) * BASE_FREQUENCY;
-			if (n == KEYS.length * (octave + 1)) {
-				octave++;
+
+		const calculateNotes = () => {
+			let octave = 0;
+			for (let n = 0; n < 88; n++) {
+				let frequency = Math.pow(2, (n - 48) / KEYS.length ) * BASE_FREQUENCY;
+				if (n == KEYS.length * (octave + 1)) {
+					octave++;
+				}
+				let note = {key: KEYS[n % KEYS.length],frequency: frequency, octave: octave};
+				notes.push(note)
 			}
-			let note = {key: KEYS[n % KEYS.length],frequency: frequency, octave: octave};
-			notes.push(note)
-		}
+		};
+
+		calculateNotes();
+
+		const renderKeyboard = (keyboardElementQuery, keyboardNotes) => {
+			let keyboardElement = document.querySelector(keyboardElementQuery);
+			let topKeysElement = document.createElement("DIV");
+			let bottomKeysElement = document.createElement("DIV");
+			let keyElementClass = 'dib flex flex-row flex-wrap';
+
+			topKeysElement.setAttribute("class",keyElementClass);
+			bottomKeysElement.setAttribute("class",keyElementClass);
+
+			keyboardNotes.map(note => {
+				let key = document.createElement("DIV");
+				let keyClass = 'ml1 mt1 h-50px'
+				if(note.key.indexOf('#') === -1 ) {
+					let bottomKey = key;
+					keyClass += ' bg-gray w-50px';
+					bottomKey.setAttribute("class",keyClass)
+					bottomKeysElement.appendChild(bottomKey);
+				} else {
+					let topKey = key;
+					keyClass += ' bg-black';
+					keyClass += note.key === "G#" ? ' w-50px' : ' w-75px';
+					keyClass += note.key === "A#" || note.key === "D#" ? ' pr1' : '';
+
+					topKey.setAttribute("class",keyClass)
+					topKeysElement.appendChild(topKey);
+				}
+			});
+
+			keyboardElement.appendChild(topKeysElement);
+			keyboardElement.appendChild(bottomKeysElement);
+		};
+
+		renderKeyboard("#upper-keyboard", notes.slice(KEYS.length * OCTAVE - 4, KEYS.length * (OCTAVE + 1) + 3));
+		renderKeyboard("#lower-keyboard", notes.slice(KEYS.length * OCTAVE + 3, KEYS.length * (OCTAVE + 1) + 8));
 
 
-		let topKeysElement = document.createElement("DIV");
-		let bottomKeysElement = document.createElement("DIV");
-		let keyElementClass = 'dib flex flex-row flex-wrap';
-
-		topKeysElement.setAttribute("class",keyElementClass);
-		bottomKeysElement.setAttribute("class",keyElementClass);
-
-		let upperHalfNotes = notes.slice(KEYS.length * OCTAVE - 4, KEYS.length * (OCTAVE + 1) + 3);
-		upperHalfNotes.map(note => {
-			let key = document.createElement("DIV");
-			let keyClass = 'ml1 mt1 h-50px'
-			if(note.key.indexOf('#') === -1 ) {
-				let bottomKey = key;
-				keyClass += ' bg-gray w-50px';
-				bottomKey.setAttribute("class",keyClass)
-				bottomKeysElement.appendChild(bottomKey);
-			} else {
-				let topKey = key;
-				keyClass += ' bg-black';
-				keyClass += note.key === "G#" ? ' w-50px' : ' w-75px';
-				keyClass += note.key === "A#" || note.key === "D#" ? ' pr1' : '';
-
-				topKey.setAttribute("class",keyClass)
-				topKeysElement.appendChild(topKey);
-			}
-		});
-
-		let keyboardElement = document.querySelector("#upper-keyboard");
-		keyboardElement.appendChild(topKeysElement);
-		keyboardElement.appendChild(bottomKeysElement);
 	</script>
 </body>
 </html>
