@@ -1,9 +1,9 @@
 <html>
 <head>
 	<style>
-		.bg-black { background-color: black; }
+		.bg--dark-gray { background-color: #666; }
 
-		.bg-gray { background-color: gray; }
+		.bg--light-gray { background-color: #ddd; }
 
 		.w-100 { width: 100%; }
 
@@ -90,7 +90,7 @@
 				u('div', {class: 'dib'},
 					u('div', {class: keyElementClass},
 						topNotes.map(note => {
-							let topKeyClass = keyClass + ' bg-black';
+							let topKeyClass = keyClass + ' bg--dark-gray';
 							topKeyClass += note.key === "G#" ? ' w-50px' : ' w-75px';
 							topKeyClass += note.key === "A#" || note.key === "D#" ? ' pr1' : '';
 
@@ -99,7 +99,7 @@
 					),
 					u('div', {class: keyElementClass},
 						bottomNotes.map(note => {
-							let bottomKeyClass = keyClass + ' bg-gray w-50px';
+							let bottomKeyClass = keyClass + ' bg--light-gray w-50px';
 
 							return u('div', {class: bottomKeyClass})
 						})
