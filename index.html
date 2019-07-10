@@ -31,22 +31,40 @@
 	</style>
 </head>
 <body>
-	<div class="flex flex-column">
-		<div class="dib" id="upper-keyboard"></div>
-		<div class="h-50px"></div>
-		<div class="dib" id="lower-keyboard"></div>
-	</div>
+
+	<div id="root"></div>
 
 	<script>
 
-		const KEYS = ["A","A#","B","C","C#","D","D#","E","F","F#","G","G#"];
-		let BASE_FREQUENCY = 440;
-		let OCTAVE = 4;
+		const u = (type, attributes, ...children) => {
+	    children = [].concat(...children);
+	    return {type, attributes, children}
+		}
 
+		const render = (v) => {
+	    let element = document.createElement(v.type);
 
-		let notes = [];
+	    for (let k in v.attributes) {
+        if (typeof v.attributes[k] === "function") {
+          element[k] = v.attributes[k];
+        } else {
+          element.setAttribute(k, v.attributes[k]);
+        }
+	    }
+
+		  v.children.map(child => element.appendChild(render(child)));
+	    
+	    return element;
+		}
+
+		const renderAt = (selector, v) => {
+	    let app = document.querySelector(selector);
+	    app.innerHTML = null;
+	    app.appendChild(render(v));
+		};
 
 		const calculateNotes = () => {
+			let notes = [];
 			let octave = 0;
 			for (let n = 0; n < 88; n++) {
 				let frequency = Math.pow(2, (n - 48) / KEYS.length ) * BASE_FREQUENCY;
@@ -56,44 +74,55 @@
 				let note = {key: KEYS[n % KEYS.length],frequency: frequency, octave: octave};
 				notes.push(note)
 			}
+			return notes;
 		};
 
-		calculateNotes();
+		const Keyboard = (props) => {
+			const keyboardNotes = props.keyboardNotes;
 
-		const renderKeyboard = (keyboardElementQuery, keyboardNotes) => {
-			let keyboardElement = document.querySelector(keyboardElementQuery);
-			let topKeysElement = document.createElement("DIV");
-			let bottomKeysElement = document.createElement("DIV");
-			let keyElementClass = 'dib flex flex-row flex-wrap';
+			const topNotes = keyboardNotes.filter(note => note.key.indexOf('#') !== -1);
+			const bottomNotes = keyboardNotes.filter(note => note.key.indexOf('#') === -1);
 
-			topKeysElement.setAttribute("class",keyElementClass);
-			bottomKeysElement.setAttribute("class",keyElementClass);
+			const keyElementClass = 'dib flex flex-row flex-wrap';
+			const keyClass = 'ml1 mt1 h-50px';
 
-			keyboardNotes.map(note => {
-				let key = document.createElement("DIV");
-				let keyClass = 'ml1 mt1 h-50px'
-				if(note.key.indexOf('#') === -1 ) {
-					let bottomKey = key;
-					keyClass += ' bg-gray w-50px';
-					bottomKey.setAttribute("class",keyClass)
-					bottomKeysElement.appendChild(bottomKey);
-				} else {
-					let topKey = key;
-					keyClass += ' bg-black';
-					keyClass += note.key === "G#" ? ' w-50px' : ' w-75px';
-					keyClass += note.key === "A#" || note.key === "D#" ? ' pr1' : '';
+			return (
+				u('div', {class: 'dib'},
+					u('div', {class: keyElementClass},
+						topNotes.map(note => {
+							let topKeyClass = keyClass + ' bg-black';
+							topKeyClass += note.key === "G#" ? ' w-50px' : ' w-75px';
+							topKeyClass += note.key === "A#" || note.key === "D#" ? ' pr1' : '';
 
-					topKey.setAttribute("class",keyClass)
-					topKeysElement.appendChild(topKey);
-				}
-			});
+							return u('div', {class: topKeyClass});
+						})
+					),
+					u('div', {class: keyElementClass},
+						bottomNotes.map(note => {
+							let bottomKeyClass = keyClass + ' bg-gray w-50px';
 
-			keyboardElement.appendChild(topKeysElement);
-			keyboardElement.appendChild(bottomKeysElement);
-		};
+							return u('div', {class: bottomKeyClass})
+						})
+					),
+				)
+			);
+		}
 
-		renderKeyboard("#upper-keyboard", notes.slice(KEYS.length * OCTAVE - 4, KEYS.length * (OCTAVE + 1) + 3));
-		renderKeyboard("#lower-keyboard", notes.slice(KEYS.length * OCTAVE + 3, KEYS.length * (OCTAVE + 1) + 8));
+		const KEYS = ["A","A#","B","C","C#","D","D#","E","F","F#","G","G#"];
+
+		let BASE_FREQUENCY = 440;
+		let OCTAVE = 4;
+		const notes = calculateNotes();
+		const upperKeyboardNotes = notes.slice(KEYS.length * OCTAVE - 4, KEYS.length * (OCTAVE + 1) + 3);
+		const lowerKeyboardNotes = notes.slice(KEYS.length * OCTAVE + 3, KEYS.length * (OCTAVE + 1) + 8);
+
+		renderAt("#root",
+			u('div', {class: "flex flex-column"}, 
+				Keyboard({keyboardNotes: upperKeyboardNotes}),
+				u('div', {class: 'h-50px'}),
+				Keyboard({keyboardNotes: lowerKeyboardNotes})
+			)
+		);
 
 
 	</script>
